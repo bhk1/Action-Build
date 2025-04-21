@@ -64,18 +64,18 @@ on:
           - android14
           - android15
       KERNEL_VERSION:
-        type: choice
-        description: "内核版本"
-        required: true
-        default: 5.15
-        options:
-          - 5.10
-          - 5.15
-          - 6.1
-          - 6.6
+       type: choice
+       description: "内核版本"
+       required: true
+       default: "5.15"
+       options:
+         - "5.10"
+         - "5.15"
+         - "6.1"
+         - "6.6"
       BUILD_METHOD:
         type: choice
-        description: "编译方式gki？perf？"
+        description: "编译方式"
         required: true
         default: gki
         options:
@@ -122,6 +122,18 @@ jobs:
         run: |
           sudo apt update && sudo apt upgrade -y
           sudo apt install -y python3 git curl
+
+      - name: Show selected inputs debug
+        run: |
+          echo "Selected CPU: ${{ github.event.inputs.CPU }}"
+          echo "Selected FEIL: ${{ github.event.inputs.FEIL }}"
+          echo "Selected CPUD: ${{ github.event.inputs.CPUD }}"
+          echo "Selected ANDROID_VERSION: ${{ github.event.inputs.ANDROID_VERSION }}"
+          echo "Selected KERNEL_VERSION: ${{ github.event.inputs.KERNEL_VERSION }}"
+          echo "Selected BUILD_METHOD: ${{ github.event.inputs.BUILD_METHOD }}"
+          echo "Selected SUSFS_CI: ${{ github.event.inputs.SUSFS_CI }}"
+          echo "Selected LZ4: ${{ github.event.inputs.LZ4 }}"
+          echo "Selected VFS: ${{ github.event.inputs.VFS }}"
 
       - name: Install repo tool
         run: |
@@ -398,6 +410,13 @@ jobs:
         id: suffix
         run: |
           echo "value=${{ github.event.inputs.VFS == 'true' && '_VFS' || '' }}${{ github.event.inputs.LZ4 == 'true' && '_LZ4KD' || '' }}" >> $GITHUB_OUTPUT
+
+      - name: Remove _v suffix from FEIL
+        id: feil_clean
+        run: |
+          clean_feil="${{ github.event.inputs.FEIL }}"
+          clean_feil="${clean_feil%_v}"  # 去掉结尾的 _v（如果有）
+          echo "value=$clean_feil" >> $GITHUB_OUTPUT
 
       - name: Upload AnyKernel3
         uses: actions/upload-artifact@v4
